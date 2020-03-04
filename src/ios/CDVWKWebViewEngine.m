@@ -114,8 +114,6 @@
 
 @synthesize engineWebView = _engineWebView;
 
-NSTimer *timer;
-
 - (instancetype)initWithFrame:(CGRect)frame
 {
     self = [super init];
@@ -303,15 +301,19 @@ NSTimer *timer;
      selector:@selector(onAppWillEnterForeground:)
      name:UIApplicationWillEnterForegroundNotification object:nil];
 
-    [[NSNotificationCenter defaultCenter]
-     addObserver:self
-     selector:@selector(keyboardWillHide)
-     name:UIKeyboardWillHideNotification object:nil];
+    if (@available(iOS 12.0, *)) {
+         addObserver:self	        // Handle keyboard dismissal leaving viewport shifted
+         selector:@selector(keyboardWillHide)	        [[NSNotificationCenter defaultCenter]
+         name:UIKeyboardWillHideNotification object:nil];	         addObserver:self
+             selector:@selector(keyboardWillHide)
+             name:UIKeyboardWillHideNotification object:nil];
 
-    [[NSNotificationCenter defaultCenter]
-     addObserver:self
-     selector:@selector(keyboardWillShow)
-     name:UIKeyboardWillShowNotification object:nil];
+
+        [[NSNotificationCenter defaultCenter]	        [[NSNotificationCenter defaultCenter]
+         addObserver:self	         addObserver:self
+         selector:@selector(keyboardWillShow)	         selector:@selector(keyboardWillShow)
+         name:UIKeyboardWillShowNotification object:nil];	         name:UIKeyboardWillShowNotification object:nil];
+        }
 
     NSLog(@"Using Ionic WKWebView");
 
@@ -378,9 +380,9 @@ NSTimer *timer;
 
 -(void)keyboardWillHide
 {
-    if (@available(iOS 12.0, *)) {
-        timer = [NSTimer scheduledTimerWithTimeInterval:0 target:self selector:@selector(keyboardDisplacementFix) userInfo:nil repeats:false];
-        [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+    if (!CGPointEqualToPoint(self.lastContentOffset, self.webView.scrollView.contentOffset)) {
+            timer = [NSTimer scheduledTimerWithTimeInterval:0 target:self selector:@selector(keyboardDisplacementFix) userInfo:nil repeats:false];	        [self.webView.scrollView setContentOffset:self.lastContentOffset];
+            [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];	        [self.webView.scrollView setContentInset:UIEdgeInsetsMake(0, 0, 0, 0)];
     }
 }
 
