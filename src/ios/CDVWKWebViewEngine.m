@@ -302,18 +302,17 @@
      name:UIApplicationWillEnterForegroundNotification object:nil];
 
     if (@available(iOS 12.0, *)) {
-         addObserver:self	        // Handle keyboard dismissal leaving viewport shifted
-         selector:@selector(keyboardWillHide)	        [[NSNotificationCenter defaultCenter]
-         name:UIKeyboardWillHideNotification object:nil];	         addObserver:self
-             selector:@selector(keyboardWillHide)
-             name:UIKeyboardWillHideNotification object:nil];
+        // Handle keyboard dismissal leaving viewport shifted
+        [[NSNotificationCenter defaultCenter]
+         addObserver:self
+         selector:@selector(keyboardWillHide)
+         name:UIKeyboardWillHideNotification object:nil];
 
-
-        [[NSNotificationCenter defaultCenter]	        [[NSNotificationCenter defaultCenter]
-         addObserver:self	         addObserver:self
-         selector:@selector(keyboardWillShow)	         selector:@selector(keyboardWillShow)
-         name:UIKeyboardWillShowNotification object:nil];	         name:UIKeyboardWillShowNotification object:nil];
-        }
+        [[NSNotificationCenter defaultCenter]
+         addObserver:self
+         selector:@selector(keyboardWillShow)
+         name:UIKeyboardWillShowNotification object:nil];
+    }
 
     NSLog(@"Using Ionic WKWebView");
 
@@ -324,12 +323,9 @@
     Class class = NSClassFromString(@"WKContentView");
     NSOperatingSystemVersion iOS_11_3_0 = (NSOperatingSystemVersion){11, 3, 0};
     NSOperatingSystemVersion iOS_12_2_0 = (NSOperatingSystemVersion){12, 2, 0};
-    NSOperatingSystemVersion iOS_13_0_0 = (NSOperatingSystemVersion){13, 0, 0};
     char * methodSignature = "_startAssistingNode:userIsInteracting:blurPreviousNode:changingActivityState:userObject:";
 
-    if ([[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion: iOS_13_0_0]) {
-         methodSignature = "_elementDidFocus:userIsInteracting:blurPreviousNode:activityStateChanges:userObject:";
-     } else if ([[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion: iOS_12_2_0]) {
+    if ([[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion: iOS_12_2_0]) {
         methodSignature = "_elementDidFocus:userIsInteracting:blurPreviousNode:changingActivityState:userObject:";
     }
 
@@ -381,26 +377,16 @@
 -(void)keyboardWillHide
 {
     if (!CGPointEqualToPoint(self.lastContentOffset, self.webView.scrollView.contentOffset)) {
-            timer = [NSTimer scheduledTimerWithTimeInterval:0 target:self selector:@selector(keyboardDisplacementFix) userInfo:nil repeats:false];	        [self.webView.scrollView setContentOffset:self.lastContentOffset];
-            [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];	        [self.webView.scrollView setContentInset:UIEdgeInsetsMake(0, 0, 0, 0)];
+        [self.webView.scrollView setContentOffset:self.lastContentOffset];
+        [self.webView.scrollView setContentInset:UIEdgeInsetsMake(0, 0, 0, 0)];
     }
 }
 
 -(void)keyboardWillShow
 {
-    if (timer != nil) {
-        [timer invalidate];
-    }
+    self.lastContentOffset = self.webView.scrollView.contentOffset;
 }
 
--(void)keyboardDisplacementFix
-{
-    // https://stackoverflow.com/a/9637807/824966
-    [UIView animateWithDuration:.25 animations:^{
-        self.webView.scrollView.contentOffset = CGPointMake(0, 0);
-    }];
-
-}
 - (BOOL)shouldReloadWebView
 {
     WKWebView* wkWebView = (WKWebView*)_engineWebView;
